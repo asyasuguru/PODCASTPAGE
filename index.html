@@ -652,7 +652,8 @@
       tag: 'Quantum',
       duration: '44:08',
       c1: '#4a7db5', c2: '#00518E',
-      
+      icon: 'q',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a"
     },
     {
       month: 'MAR', monthFull: 'March', num: '03',
@@ -661,7 +662,8 @@
       tag: 'Infrastructure',
       duration: '29:55',
       c1: '#2d7bbf', c2: '#003d6b',
-      icon: 'net'
+      icon: 'net',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a"
     },
     {
       month: 'APR', monthFull: 'April', num: '04',
@@ -671,9 +673,32 @@
       duration: '42:17',
       c1: '#a8c8e8', c2: '#00518E',
       icon: 'spark',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a",
       active: true
     }
   ];
+  EPISODES.forEach((ep, index) => {
+  if (!ep.audio) return;
+
+  const tempAudio = new Audio(ep.audio);
+
+  tempAudio.addEventListener('loadedmetadata', () => {
+    const duration = tempAudio.duration;
+
+    // format time
+    const m = Math.floor(duration / 60);
+    const s = Math.floor(duration % 60).toString().padStart(2, '0');
+
+    const formatted = `${m}:${s}`;
+
+    // update data
+    EPISODES[index].duration = formatted;
+
+    // update UI (cards already rendered)
+    const card = document.querySelector(`.ep-card[data-idx="${index}"] .dur`);
+    if (card) card.textContent = formatted;
+  });
+});
 const audio = document.getElementById('audioPlayer');
   // Icon library
   const ICONS = {
@@ -749,6 +774,9 @@ audio.addEventListener('timeupdate', () => {
 
 audio.addEventListener('loadedmetadata', () => {
   TOTAL_SECONDS = audio.duration;
+
+  // update full player total time
+  totTimeEl.textContent = fmt(TOTAL_SECONDS);
 });
   function renderWave(){
     const pos = current / TOTAL_SECONDS;
@@ -816,8 +844,6 @@ document.querySelectorAll('.ep-card').forEach(card => {
     document.getElementById('playerTitle').textContent = e.title;
     document.getElementById('playerTag').textContent =
       `${e.monthFull.toUpperCase()} · NOW PLAYING`;
-
-    audio.currentTime = pct * TOTAL_SECONDS;
     audio.play();
 
     setPlaying(true);
